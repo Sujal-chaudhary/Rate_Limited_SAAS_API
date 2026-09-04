@@ -6,7 +6,7 @@ const rateLimiter = async (req, res, next) => {
     const windowSize = 60;
     const windowStart = Math.floor((Date.now() / 1000) / windowSize) * windowSize;
 
-    const key = `rate:${userId}:${windowStart}`;
+    const key = `rate:${userId}:${windowStart}`; //key for fixed window
 
    // real logic
     const PLANS = {
