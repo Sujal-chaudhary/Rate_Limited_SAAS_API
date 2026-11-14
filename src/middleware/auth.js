@@ -29,7 +29,12 @@ const auth = async(req , res, next) => {
             message: 'missing Api key'
         })
      };
-    const rawKey = authHeader.split(' ')[1]; //strips "bearer "
+       const parts = authHeader.split(' ');
+       const rawKey = parts.length === 2 && parts[0].toLowerCase() === 'bearer' ? parts[1] : null;
+       
+        if (!rawKey) {
+           return res.status(401).json({ message: 'malformed authorization header, expected: Bearer <key>' });
+          }
 
      //hash it 
      const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');

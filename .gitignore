@@ -120,5 +120,7 @@ dist
 # Agent context & study notes
 agents/
 redis.md
+bullmq-spec.md
+README.md
 
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Node

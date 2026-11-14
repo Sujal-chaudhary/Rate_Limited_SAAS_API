@@ -1,4 +1,5 @@
 import redis from '../config/redis.js'
+import quotaNotifyQueue from '../queues/quotaNotifyQueue.js';
 
 const luaScript = `
   local key        = KEYS[1]
@@ -42,9 +43,10 @@ const rateLimiter = async(req , res, next) => {
        const plan = req.user.plan;
        const now = Date.now();
        const key = `token_bucket:${userId}`
+      
 
        const PLANS = {
-        free: { capacity: 10, refillRate: 10/60 },  // 10 tokens/min
+        free: { capacity: 1000000, refillRate: 1000000/60 },  // 10 tokens/min
         pro:  { capacity: 100, refillRate: 100/60 },
         enterprise: { capacity: 500, refillRate: 500/60 }
      };
@@ -60,6 +62,23 @@ const rateLimiter = async(req , res, next) => {
      //set header
      res.set('X-RateLimit-Limit',capacity);
      res.set('X-RateLimit-Remaining',tokensLeft);
+
+     //JOB QUEUE SETUP:(PRODUCER)
+     if (tokensLeft <= capacity * 0.2) {
+         const threshold = tokensLeft === 0 ? 100 : 80;
+         const today = new Date().toISOString().split('T')[0];
+         const jobId = `quota_${userId}_${threshold}_${today}`; // it should not contain colons
+      
+         quotaNotifyQueue.add(
+           'notify',
+           {tenantId: userId, threshold}, //data
+           {
+            jobId, //bullMQ drops duplicate jobs with same jobId so now no spamming can happen to user
+            attempts:3,
+            backoff:{type: 'exponential', delay: 1000}
+           }
+         ).catch(err => console.error('failed to enqueue quota notify job: ',err));
+      };
 
      if(allowed === 1){
         next()
@@ -83,7 +102,18 @@ const rateLimiter = async(req , res, next) => {
 };
 
 
-
-
-
 export default rateLimiter;
+
+
+/* 
+Now: The Producer Dedupe (jobId)
+
+Remember earlier when you correctly said:
+
+"at 81, 82, 83... it will notify the user again and again"
+
+Here is where BullMQ's jobId deduplication shines!
+When we add a job to BullMQ, if we give it a specific jobId, 
+BullMQ refuses to enqueue a second job with that same ID while one is pending or active.
+
+*/

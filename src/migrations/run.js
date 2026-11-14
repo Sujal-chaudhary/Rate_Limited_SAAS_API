@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const sql = fs.readFileSync(path.join(__dirname, '001_create_tables.sql'), 'utf8');
+const sql = fs.readFileSync(path.join(__dirname, '004_create_sent_notification_table.sql'), 'utf8');
 
 const run = async() => {
     try {
