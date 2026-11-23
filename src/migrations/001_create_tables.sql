@@ -29,4 +29,4 @@ CREATE TABLE resources(
     tenant_id UUID NOT NULL REFERENCES tenants(id),
     name TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now()
-);t
+);

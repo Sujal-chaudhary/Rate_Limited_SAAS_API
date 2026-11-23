@@ -1,13 +1,7 @@
-import express from 'express';
-import tenantRouter from './routes/tenants.js';
-import keyRouter from './routes/keys.js';
-import resourcesRouter from './routes/resources.js';
-import adminRouter from './routes/admin.js';
-
-const app = express();
-
-//MW
-app.use(express.json());
+import app from "./app.js";
+import pool from "./config/db.js";
+import redis from "./config/redis.js";
+// just keep app.listen
 
 //server start
 const PORT = 3000;
@@ -25,10 +19,40 @@ app.get('/api/data',auth, rateLimiter, (req, res) => {
     res.json({ message: "success" });
 }); */
 
+//Graceful Shutdown:- (When the OS tells Node to stop (SIGTERM on cloud, or SIGINT when you press Ctrl+C locally))
 
-//route decleration:-
-app.use('/api/v1/tenants', tenantRouter);
-app.use('/api/v1/keys', keyRouter);
-app.use('/api/v1/resources',resourcesRouter);
-app.use('/api/v1/admin',adminRouter);
+const gracefulShutdown = async (signal) => {
+  console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
+
+  // 1. Stop accepting new HTTP requests
+  server.close(async () => {
+    console.log('HTTP server closed. Finishing in-flight requests...');
+
+    try {
+      // 2. Close Database Pool
+      await pool.end();
+      console.log('PostgreSQL pool drained and closed.');
+
+      // 3. Close Redis Connection
+      await redis.quit();
+      console.log('Redis connection closed.');
+
+      console.log('Graceful shutdown complete. Exiting cleanly.');
+      process.exit(0);
+    } catch (err) {
+      console.error('Error during shutdown cleanup:', err);
+      process.exit(1);
+    }
+  });
+
+  // Force shutdown if cleanup takes too long (e.g. 10s timeout)
+  setTimeout(() => {
+    console.error('Forced shutdown: cleanup took too long.');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
 

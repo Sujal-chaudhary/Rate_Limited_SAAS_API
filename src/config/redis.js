@@ -1,6 +1,13 @@
 import Redis from 'ioredis';
+import dotenv from 'dotenv';
 
-//redis instance 
-const redis = new Redis({ host: 'localhost', port: 6379 });
+dotenv.config();
+
+const redis = process.env.REDIS_URL
+  ? new Redis(process.env.REDIS_URL)
+  : new Redis({
+      host: process.env.REDIS_HOST || 'localhost',
+      port: Number(process.env.REDIS_PORT) || 6379,
+    });
 
 export default redis;

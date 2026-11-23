@@ -46,7 +46,7 @@ const rateLimiter = async(req , res, next) => {
       
 
        const PLANS = {
-        free: { capacity: 1000000, refillRate: 1000000/60 },  // 10 tokens/min
+        free: { capacity: 10, refillRate: 10/60 },  // 10 tokens/min
         pro:  { capacity: 100, refillRate: 100/60 },
         enterprise: { capacity: 500, refillRate: 500/60 }
      };
