@@ -1,5 +1,7 @@
 # Rate-Limited Multi-Tenant SaaS API
 
+[![CI](https://github.com/Sujal-chaudhary/Rate_Limited_SAAS_API/actions/workflows/ci.yml/badge.svg)](https://github.com/Sujal-chaudhary/Rate_Limited_SAAS_API/actions/workflows/ci.yml)
+
 A high-performance, production-ready multi-tenant backend API built with **Node.js**, **Express 5**, **PostgreSQL**, and **Redis**. Featuring distributed atomic rate limiting across three distinct algorithms, cryptographic SHA-256 API key authentication, and strict multi-tenant data isolation.
 
 ---
