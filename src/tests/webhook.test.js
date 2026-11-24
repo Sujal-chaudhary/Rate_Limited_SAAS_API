@@ -22,6 +22,9 @@ describe('Stripe webhook signature Verification & Idempotency', () => {
         
     after(async() => {
         await pool.end(); //close db pool so test runner exits cleanly
+        await redis.quit();
+        //give open sockets 200 ms to flush and exit cleanly
+        setTimeout(() => process.exit(0), 200)
     })
     it('1. should reject with 400 if stripe signature header is missing', async() => {
         const payload = {id: 'test_123', type: 'checkout.session.completed'};
