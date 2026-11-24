@@ -5,6 +5,7 @@ import app from '../app.js';
 import stripe from '../config/stripe.js';
 import pool from '../config/db.js';
 import crypto from 'node:crypto';
+import redis from '../config/redis.js';
 
 
 // Helper to sign test payloads with the real HMAC secret
